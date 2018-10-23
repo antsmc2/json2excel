@@ -1,4 +1,4 @@
-from io import BytesIO
+import tempfile
 import json
 import pandas as pd
 import pytest
@@ -19,13 +19,14 @@ def simple_json_test(client, url):
             'state': 'Ohio'}]
     response = client.post(url, data=json.dumps(data),
         content_type='application/json')
-    output = BytesIO()
-    output.write(response.data)
-    # import pdb; pdb.set_trace()
+    # stringIO seemed to give issues with read_csv, using temp file instead
+    fp = tempfile.TemporaryFile()
+    fp.write(response.data)
+    fp.seek(0)
     if 'excel' in url:
-        df = pd.read_excel(output)
+        df = pd.read_excel(fp)
     else:
-        df = pd.read_csv(output)
+        df = pd.read_csv(fp)
     assert len(df.columns) == len(data[0].keys())
     for idx, entry in enumerate(data):
         assert df['info'][idx] == data[idx]['info']
@@ -43,12 +44,14 @@ def nested_json_test(client, url):
             'state': 'Ohio'}]
     response = client.post(url, data=json.dumps(data),
             content_type='application/json')
-    output = BytesIO()
-    output.write(response.data)
+    # stringIO seemed to give issues with read_csv, using temp file instead
+    fp = tempfile.TemporaryFile()      #
+    fp.write(response.data)
+    fp.seek(0)
     if 'excel' in url:
-        df = pd.read_excel(output)
+        df = pd.read_excel(fp)
     else:
-        df = pd.read_csv(output)
+        df = pd.read_csv(fp)
     assert len(df.columns) == len(data[0].keys()) + 1 #extra 1 for nested entries
     for idx, entry in enumerate(data):
         assert df['info.governor'][idx] == data[idx]['info']['governor']
