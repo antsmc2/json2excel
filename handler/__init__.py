@@ -16,6 +16,7 @@ def load_json(json_string):
     decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
     return decoder.decode(json_string)
 
+
 @app.route('/excel', methods=['POST'])
 def excel():
     '''Basically takes a nested json object list and produces an excel out of it
