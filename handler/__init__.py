@@ -1,12 +1,20 @@
+from io import BytesIO
+import collections
+import json
+from flask import Flask
 from flask import request
 from flask import make_response
+from flask_cors import CORS
 import pandas as pd
 from pandas.io.json import json_normalize
-from io import BytesIO
 
-from flask import Flask
+
 app = Flask(__name__)
+CORS(app)
 
+def load_json(json_string):
+    decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
+    return decoder.decode(json_string)
 
 @app.route('/excel', methods=['POST'])
 def excel():
@@ -16,7 +24,7 @@ def excel():
     '''
     output = BytesIO()
     filename = request.headers.get('filename', 'excel.xlsx')
-    data = request.get_json()
+    data = load_json(request.data)
     if len(data) > 0:
         df = json_normalize(data)
     else:
@@ -41,7 +49,7 @@ def csv():
     '''
     output = BytesIO()
     filename = request.headers.get('filename', 'converted.csv')
-    data = request.get_json()
+    data = load_json(request.data)
     if len(data) > 0:
         df = json_normalize(data)
     else:
