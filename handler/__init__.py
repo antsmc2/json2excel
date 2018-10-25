@@ -25,7 +25,12 @@ def excel():
     '''
     output = BytesIO()
     filename = request.headers.get('filename', 'excel.xlsx')
-    data = load_json(request.data)
+    if request.is_json:
+        data = load_json(request.data)
+    else: # look for form data with field json
+        data = load_json(request.form['json'])
+        # override file name if present
+        filename = request.form.get('filename', filename)  
     if len(data) > 0:
         df = json_normalize(data)
     else:
@@ -50,7 +55,12 @@ def csv():
     '''
     output = BytesIO()
     filename = request.headers.get('filename', 'converted.csv')
-    data = load_json(request.data)
+    if request.is_json:
+        data = load_json(request.data)
+    else: # look for form data with field json
+        data = load_json(request.form['json'])
+        # override file name if present
+        filename = request.form.get('filename', filename)
     if len(data) > 0:
         df = json_normalize(data)
     else:
